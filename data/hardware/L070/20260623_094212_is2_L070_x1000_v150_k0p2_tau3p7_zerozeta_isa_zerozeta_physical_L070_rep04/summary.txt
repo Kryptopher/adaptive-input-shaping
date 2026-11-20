@@ -1,0 +1,7 @@
+rope_length_m: 0.7
+command_stop_time_s: 12.336396377009805
+chosen_id_time_s: 3.569980587984901
+chosen_id_T_s: 0.8516736401673639
+schedule_T_s: 0.9844681682898362
+id_omega_n_rad_s: 3.6887282938244197
+id_cond_b: 0.07772168147666833

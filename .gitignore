@@ -1,0 +1,4 @@
+ais_sim/out/
+__pycache__/
+*.pyc
+.venv/
