@@ -27,10 +27,10 @@ Run each command from the repository root. Outputs are written to `ais_sim/out/`
 | Step-wise reference figure | `python3 -m ais_sim.step_wise` | `step_wise_*.pdf` |
 | Comparison with the FT shaper | `python3 -m ais_sim.ft_vs_ais_paper --replot data/ft_vs_ais_sweep.csv --history data/ft_vs_ais_history.csv` | `ft_vs_ais_paper_*.pdf` |
 | Measurement noise figure and statistics | `python3 -m ais_sim.noise_study --replot data/noise_study_trials.csv` | `noise_study_*.pdf`, `noise_study_*_summary.csv` |
-| Sensitivity table and figure | `python3 -m ais_sim.sensitivity` | `sensitivity_*.pdf`, `sensitivity_*.csv` |
+| Sensitivity figure | `python3 -m ais_sim.sensitivity` | `sensitivity_*.pdf`, `sensitivity_*.csv` |
 | Feasibility map and damped feasibility limit | `python3 -m ais_sim.feasibility_maps` | `feasibility_k_phi_*.pdf`, `feasibility_zeta_phi_*.csv` |
 | Damped solver table | `python3 -m ais_sim.solver_report` | `solver_damped_summary_*.csv` |
-| Hardware re-analysis table | `python3 -m ais_sim.hardware_reanalysis` | `hardware_reanalysis_summary_*.csv` |
+| Hardware re-analysis (numbers in Sec. 5.2.1) | `python3 -m ais_sim.hardware_reanalysis` | `hardware_reanalysis_summary_*.csv` |
 
 The FT comparison and the noise study can also be simulated from scratch by leaving out the options. The noise study then runs 1200 identifications and takes much longer. Each script prints its main numbers and lists its options with `--help`.
 
@@ -46,7 +46,7 @@ matlab -batch "run('experiments/modal_fit.m')"
 | Script | Paper section | Output in `experiments/out/` |
 | --- | --- | --- |
 | `residual_metrics.m` | residual RMS and peak-to-peak angle, Sec. 5.2.3 | `residual_metrics/raw_10s_residual_angle_energy_results_gates.csv` (one row per run), the summary by length and method, and the same values divided by the median Pulse value |
-| `modal_fit.m` | two-mode fits, Sec. 5.2.3 | `modal_fit/modal_10s_results_gates_bestof10.csv` (one row per run), the summary by length and method, the log of all initializations, and `best_fit_decompositions/` with the selected fit of each run |
+| `modal_fit.m` | two-mode fits and mode-1 energy (Table 5), Sec. 5.2.3 | `modal_fit/modal_10s_results_gates_bestof10.csv` (one row per run), the summary by length and method, the log of all initializations, and `best_fit_decompositions/` with the selected fit of each run |
 
 Both scripts use the swing angle `swing_pitch_deg` from 0.20 s to 10.20 s after the command stop, resampled at 0.01 s and demeaned. The stop is the first sample after the motion where the commanded speed falls to 5 % of its peak. `residual_metrics.m` reports the peak-to-peak value, the RMS and the integral of the squared angle over this window.
 
@@ -70,7 +70,7 @@ The energy table and the experimental figures of the paper are computed from the
 
 ## Data
 
-`data/experiments/` holds the 100 hardware runs: unshaped (Pulse), ZV, ZVD and AIS commands at rope lengths of 0.5, 0.7, 0.9, 1.1 and 1.3 m (folders `L050` to `L130`), five runs each. Each run folder has `raw.csv` with the columns the analysis reads: the motion time, the payload sample time, the commanded velocity in x and y in mm/s, the payload swing in mm and the swing angle in deg. The 50 Pulse and AIS runs also have `summary.txt` with the rope length, the command stop time and the identification values the crane logged, read by `ais_sim.hardware_reanalysis`. In the folder names, `zv` marks ZV runs and `robust` marks ZVD runs.
+`data/experiments/` holds the 100 hardware runs: unshaped (Pulse), ZV, ZVD and AIS commands at rope lengths of 0.5, 0.7, 0.9, 1.1 and 1.3 m (folders `L050` to `L130`), five runs each. Each run folder has `raw.csv` with the columns the analysis reads: the motion time, the payload sample time, the commanded velocity in x and y in mm/s, the payload swing in mm and the swing angle in deg. The 50 Pulse and AIS runs also have `summary.txt` with the rope length, the command stop time and the identification values the crane logged, read by `ais_sim.hardware_reanalysis`. In the folder names, `zv` marks ZV runs, `robust` marks ZVD runs and `is2` marks AIS runs.
 
 `data/ft_vs_ais_sweep.csv` and `data/ft_vs_ais_history.csv` are the simulated sweep and time histories behind the FT comparison figure. `data/noise_study_trials.csv` has one row per noise trial behind the noise figure and statistics.
 
