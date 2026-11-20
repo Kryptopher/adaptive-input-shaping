@@ -16,12 +16,11 @@ percentile frequency estimation error at 10 dB (ais_sim.noise_study).
   AIS       K = 0.20 at 0, A at tau+T, B at tau+2T, tau in {1, 2, 4} s
 
 wn_hat = 3.245 rad/s (the hardware pendulum at L = 0.90 m), zeta = zeta_hat in
-{0, 0.1}. The second figure is the surface of V over (wn / wn_hat, true zeta)
-for the AIS at tau = 2 s designed for (wn_hat, zeta_hat = 0).
+{0, 0.1}.
 
-Writes ais_sim/out/sensitivity_<stamp>.csv/.pdf/.png,
+Writes ais_sim/out/sensitivity_<stamp>.csv/.pdf/.png and
 sensitivity_<stamp>_band.csv (V at the errors in BAND_ERRORS, also for the
-hardware window tau = 3.7 s) and sensitivity_surface_<stamp>.csv/.pdf/.png.
+hardware window tau = 3.7 s).
 """
 
 from __future__ import annotations
@@ -42,9 +41,6 @@ BAND = (0.99, 1.01)
 BAND_ERRORS = (-0.01, -0.003, 0.003, 0.01)
 ZETAS = (0.0, 0.1)
 RATIOS = np.linspace(0.5, 1.5, 1001)
-SURFACE_TAU = 2.0
-SURFACE_ZETAS = np.linspace(0.0, 0.3, 121)
-SURFACE_RATIOS = np.linspace(0.5, 1.5, 201)
 LEVELS = (5.0, 10.0)
 OUT = Path(__file__).resolve().parent / 'out'
 COLORS = {'ZV': '#52514e', 'ZVD': '#0b0b0b', 'AIS tau=1': '#9cc3f0',
@@ -141,27 +137,6 @@ def plot_curves(curves, path):
     plt.close(fig)
 
 
-def plot_surface(surface, path):
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    from matplotlib.colors import LogNorm
-    plt.rcParams.update({'font.size': 9})
-    fig, ax = plt.subplots(figsize=(4.6, 3.4), constrained_layout=True)
-    values = np.maximum(surface, 0.1)
-    mesh = ax.pcolormesh(SURFACE_RATIOS, SURFACE_ZETAS, values, shading='auto',
-                         cmap='Blues', norm=LogNorm(vmin=0.1, vmax=100.0))
-    lines = ax.contour(SURFACE_RATIOS, SURFACE_ZETAS, surface, levels=(1, 5, 10, 25, 50),
-                       colors='#0b0b0b', linewidths=0.7)
-    ax.clabel(lines, fmt='%g %%', fontsize=7)
-    fig.colorbar(mesh, ax=ax, label='residual vibration (%)')
-    ax.set_xlabel(r'$\omega_n / \hat\omega_n$')
-    ax.set_ylabel(r'true $\zeta$ (design $\hat\zeta = 0$)')
-    fig.savefig(path.with_suffix('.pdf'))
-    fig.savefig(path.with_suffix('.png'), dpi=200)
-    plt.close(fig)
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -206,18 +181,6 @@ def main():
         writer.writeheader()
         writer.writerows(band_rows)
 
-    impulses = ais(OMEGA_HAT, 0.0, SURFACE_TAU)
-    R, Z = np.meshgrid(SURFACE_RATIOS, SURFACE_ZETAS)
-    surface = vibration(impulses, R * OMEGA_HAT, Z)
-    spath = OUT / f'sensitivity_surface_{stamp}'
-    with spath.with_suffix('.csv').open('w', newline='') as handle:
-        writer = csv.writer(handle)
-        writer.writerow(['zeta', 'ratio', 'V_pct'])
-        for i, z in enumerate(SURFACE_ZETAS):
-            for j, r in enumerate(SURFACE_RATIOS):
-                writer.writerow([f'{z:.6g}', f'{r:.6g}', f'{surface[i, j]:.6g}'])
-    plot_surface(surface, spath)
-
     print(f'wn_hat = {OMEGA_HAT} rad/s, K = {K}')
     print('  zeta  shaper      span after estimate  V(nominal)  V(0.9)  V(1.1)  '
           'width V<=5%   width V<=10%')
@@ -229,12 +192,7 @@ def main():
     for row in band_rows:
         print(f"  {row['zeta']:<4g}  {row['shaper']:<10s}  " + '  '.join(
             f"{row[f'V_at_{100.0 * e:+g}pct']:8.2f}" for e in BAND_ERRORS))
-    on_axis = surface[:, int(np.argmin(np.abs(SURFACE_RATIOS - 1.0)))]
-    print(f'\nSurface (AIS, tau = {SURFACE_TAU:g} s, design zeta = 0): at wn = wn_hat, '
-          f'V = {on_axis[np.argmin(np.abs(SURFACE_ZETAS - 0.01))]:.2f} % at zeta = 0.01, '
-          f'{on_axis[np.argmin(np.abs(SURFACE_ZETAS - 0.05))]:.2f} % at 0.05, '
-          f'{on_axis[np.argmin(np.abs(SURFACE_ZETAS - 0.1))]:.2f} % at 0.1')
-    print(f'\nWrote {path}.csv/.pdf/.png and {spath.name}.csv/.pdf/.png')
+    print(f'\nWrote {path}.csv/.pdf/.png and {path.name}_band.csv')
 
 
 if __name__ == '__main__':

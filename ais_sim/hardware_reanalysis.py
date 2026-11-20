@@ -2,9 +2,9 @@
 
     python3 -m ais_sim.hardware_reanalysis [--data DIR] [--workers N]
 
-The data are in data/hardware/L050 .. L130, one folder per run with raw.csv
-(move_time_sec, payload_sample_time_s, swing_mm) and summary.txt (the values
-the crane logged). For every AIS run:
+The data are in data/experiments/L050 .. L130, one folder per run. The AIS and
+pulse runs are read: raw.csv (move_time_sec, payload_sample_time_s, swing_mm)
+and summary.txt (the values the crane logged). For every AIS run:
 
 1. Rebuild the identification window the crane used. The crane stored
    (payload_sample_time - t0, swing_mm) per payload sample and locked the fit
@@ -49,7 +49,7 @@ from pathlib import Path
 
 import numpy as np
 
-DATA = Path(__file__).resolve().parent.parent / 'data' / 'hardware'
+DATA = Path(__file__).resolve().parent.parent / 'data' / 'experiments'
 LENGTHS = ('L050', 'L070', 'L090', 'L110', 'L130')
 OUT = Path(__file__).resolve().parent / 'out'
 # Crane identifier settings used in every AIS run.
